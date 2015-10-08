@@ -30,7 +30,8 @@ class GetIP(Resource):
         payload = {}
         remote_addy = request.remote_addr
         x_forward_info = request.headers.get('X-Forwarded-For')
-        payload['meta'] = {'X-Forwarded-For': x_forward_info, 'remote_ip': remote_addy}
+        if request.args.get('debug'):
+            payload['meta'] = {'X-Forwarded-For': x_forward_info, 'remote_ip': remote_addy}
         if x_forward_info:
             client_addy = x_forward_info.split(',')[0]
         else:
