@@ -12,7 +12,7 @@ def type_formatter(func):
     def decorated_function(*args, **kwargs):
         format_type = request.args.get('format')
         callback = request.args.get('callback', 'callback')
-        data = str(func(*args, **kwargs)['data'])
+        data = str(func(*args, **kwargs)['data']['ip'])
         if format_type == 'jsonp':
             content = str(callback) + '({"ip":"' + str(data) + '"});'
             return current_app.response_class(content, mimetype='application/javascript')
@@ -35,7 +35,7 @@ class GetIP(Resource):
             client_addy = x_forward_info.split(',')[0]
         else:
             client_addy = remote_addy
-        payload['data'] = client_addy
+        payload['data'] = {"ip": client_addy}
         return payload
 
 api.add_resource(GetIP, '/', endpoint='getip')
