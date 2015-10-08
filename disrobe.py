@@ -1,13 +1,31 @@
-import json
-
-from flask import Flask, request
+from functools import wraps
+from flask import Flask, request, current_app
 from flask.ext.restful import Api, Resource
 
 app = Flask(__name__, static_url_path="")
 api = Api(app)
 
 
+def type_formatter(func):
+    """Send back proper format"""
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        format_type = request.args.get('format')
+        callback = request.args.get('callback', 'callback')
+        data = str(func(*args, **kwargs)['data'])
+        if format_type == 'jsonp':
+            content = str(callback) + '({"ip":"' + str(data) + '"});'
+            return current_app.response_class(content, mimetype='application/javascript')
+        elif format_type == 'text':
+            content = str(data)
+            return current_app.response_class(content, mimetype='text/plan')
+        else:
+            return func(*args, **kwargs)
+    return decorated_function
+
+
 class GetIP(Resource):
+    @type_formatter
     def get(self):
         payload = {}
         remote_addy = request.remote_addr
